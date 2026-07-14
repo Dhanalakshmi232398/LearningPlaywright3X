@@ -19,5 +19,5 @@ console.log(typeof x); // Output: undefined
 
 
 var y = null; // y is declared and explicitly assigned the value null
-Console.log(y); // Output: null
+console.log(y); // Output: null
 console.log(typeof y); // Output: object (this is a known quirk in JavaScript, null is considered an object)

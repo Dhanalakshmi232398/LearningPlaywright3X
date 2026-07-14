@@ -16,7 +16,7 @@ function calculateTotalAmount(price, quantity) {"return function camel case";}
 //2. PascalCase (standard for JS classes and constructor functions)
 let UserDetails = "PascalCase";
 let ShoppingCart = "cart";
-function Amount(price, quantity) {"return function camel case";}
+function Amount(price, quantity) {"return constructor";}
 
 
 //3. snake_case (underscore seperated words)

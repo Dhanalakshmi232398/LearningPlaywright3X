@@ -34,3 +34,11 @@ console.log(typeof color_hex);  // Output: number
 let octal= 0o77; // octal literal for decimal 8 //base 8
 console.log(octal);  // Output: 63
 console.log(typeof octal);  // Output: number
+
+let million = 1e6; // exponential notation for 1 million
+console.log(million);    // Output: 1000000
+console.log(typeof million);  // Output: number
+
+let tiny = 1e-6; // exponential notation for 0.000001
+console.log(tiny);// Output: 0.000001
+console.log(typeof tiny);  // Output: number
