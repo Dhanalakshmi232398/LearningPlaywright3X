@@ -4,4 +4,4 @@ console.log(arr.length);  // 0 to 3
 console.log(arr[4]); //undefined
 
 let testResults = ["pass", "fail", "hold", "skip"];
-let mixed = [1, "hello", true, null]
+let mixed = [1, "hello", true, null];

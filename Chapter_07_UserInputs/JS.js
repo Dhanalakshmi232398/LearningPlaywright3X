@@ -1,4 +1,4 @@
-// not mandatory
+// not mandatory - it will run in terminal
 let num = prompt("Enter a number:");
 num = Number(num);  //Convert string to number
 
