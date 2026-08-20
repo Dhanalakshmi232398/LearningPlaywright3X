@@ -1,0 +1,11 @@
+//Find the Factorial of a Number.
+function factorialRecursive(n){
+    //Base cases
+    if(n < 0) return undefined;
+    if(n === 0 || n ===1) return 1;
+
+    // Recursive call
+    return n * factorialRecursive(n-1);
+
+}
+console.log(factorialRecursive(5));         //120
