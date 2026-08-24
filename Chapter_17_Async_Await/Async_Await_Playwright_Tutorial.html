@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Async JavaScript with Playwright</title>
+    <style>
+        :root {
+            --ink: #17212b;
+            --muted: #52606d;
+            --paper: #fffdf8;
+            --line: #d9e2ec;
+            --blue: #1769aa;
+            --blue-light: #e8f3fb;
+            --orange: #d66a1f;
+            --orange-light: #fff0e5;
+            --code: #15232e;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            color: var(--ink);
+            background: #eef4f1;
+            font-family: Georgia, "Times New Roman", serif;
+            line-height: 1.6;
+        }
+
+        header {
+            padding: 4rem max(1.25rem, calc((100% - 1040px) / 2));
+            color: white;
+            background: linear-gradient(135deg, #143d52, #1769aa 58%, #db7128);
+        }
+
+        header p { max-width: 680px; margin-bottom: 0; font-size: 1.1rem; }
+        h1, h2, h3 { line-height: 1.2; }
+        h1 { max-width: 760px; margin: 0; font-size: clamp(2.3rem, 6vw, 4.8rem); }
+        h2 { margin-top: 0; color: #143d52; font-size: 2rem; }
+        h3 { color: #143d52; }
+        main { max-width: 1040px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+        section { margin: 2rem 0 3.5rem; }
+        .intro, .tip, .warning {
+            padding: 1rem 1.25rem;
+            border-left: 5px solid var(--blue);
+            background: var(--paper);
+        }
+        .tip { border-color: var(--orange); background: var(--orange-light); }
+        .warning { border-color: #bb3e03; background: #fff5f1; }
+        .concept {
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--paper);
+            box-shadow: 0 5px 18px rgba(20, 61, 82, 0.06);
+        }
+        code, pre { font-family: Consolas, "Courier New", monospace; }
+        code { padding: .1rem .3rem; color: #9c3d00; background: #fff0e5; }
+        pre {
+            overflow-x: auto;
+            margin: 1rem 0;
+            padding: 1rem;
+            color: #f2f6f8;
+            background: var(--code);
+            border-radius: 6px;
+            font-size: .9rem;
+            line-height: 1.5;
+        }
+        pre code { padding: 0; color: inherit; background: transparent; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; }
+        .grid div { padding: 1rem; background: var(--blue-light); }
+        ul { padding-left: 1.3rem; }
+        .answer { color: var(--muted); font-style: italic; }
+        footer { padding: 1.5rem; color: white; text-align: center; background: #143d52; }
+        @media (max-width: 600px) {
+            header { padding-top: 2.5rem; padding-bottom: 2.5rem; }
+            h2 { font-size: 1.65rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Async JavaScript with Playwright</h1>
+        <p>A practical tutorial for reading asynchronous test code, choosing between sequential and parallel work, and handling browser events.</p>
+    </header>
+
+    <main>
+        <section>
+            <div class="intro">
+                <strong>The central idea:</strong> Playwright talks to a browser over asynchronous APIs. JavaScript starts an operation, waits for its result, and then continues the test.
+            </div>
+            <p>Examples below use the Playwright Test runner. Save JavaScript examples as a <code>.spec.js</code> file and run them with <code>npx playwright test</code>.</p>
+            <div class="grid">
+                <div><strong>Sequential</strong><br>Use when the next step needs the previous result.</div>
+                <div><strong>Parallel</strong><br>Use when operations are independent.</div>
+                <div><strong>Events</strong><br>Start waiting before the action that creates the event.</div>
+            </div>
+        </section>
+
+        <section>
+            <h2>1. <code>async</code></h2>
+            <div class="concept">
+                <p>An <code>async</code> function always returns a Promise. In Playwright, a test callback is commonly marked <code>async</code> so it can use <code>await</code>.</p>
+                <pre><code>import { test, expect } from '@playwright/test';
+
+test('opens the Playwright home page', async ({ page }) =&gt; {
+    await page.goto('https://playwright.dev/');
+    await expect(page).toHaveTitle(/Playwright/);
+});</code></pre>
+                <p>Even if an async function returns a plain value, JavaScript turns it into a resolved Promise:</p>
+                <pre><code>async function getEnvironment() {
+    return 'test';
+}
+
+getEnvironment().then(value =&gt; console.log(value)); // test</code></pre>
+            </div>
+        </section>
+
+        <section>
+            <h2>2. <code>await</code></h2>
+            <div class="concept">
+                <p><code>await</code> pauses the current async function until a Promise settles, then gives you its resolved value. It makes asynchronous steps read from top to bottom.</p>
+                <pre><code>test('logs in', async ({ page }) =&gt; {
+    await page.goto('https://example.com/login');
+    await page.getByLabel('Email').fill('student@example.com');
+    await page.getByLabel('Password').fill('secret');
+    await page.getByRole('button', { name: 'Log in' }).click();
+
+    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
+});</code></pre>
+                <div class="tip"><strong>Important:</strong> <code>await</code> does not block the whole JavaScript process. It pauses this async function while the browser operation is in progress.</div>
+            </div>
+        </section>
+
+        <section>
+            <h2>3. <code>Promise.all</code></h2>
+            <div class="concept">
+                <p>Use <code>Promise.all</code> when several Promises are independent. They start together, and the result array keeps the same order as the input array. If one rejects, the combined Promise rejects.</p>
+                <pre><code>test('loads independent data together', async ({ page, request }) =&gt; {
+    const [homeResponse, healthResponse] = await Promise.all([
+        page.goto('https://example.com/'),
+        request.get('https://example.com/health')
+    ]);
+
+    expect(homeResponse.ok()).toBeTruthy();
+    expect(healthResponse.ok()).toBeTruthy();
+});</code></pre>
+                <p>For a browser event, create the wait first, trigger the action second, then await both:</p>
+                <pre><code>const downloadPromise = page.waitForEvent('download');
+await page.getByRole('button', { name: 'Download' }).click();
+const download = await downloadPromise;
+await download.saveAs('artifacts/report.pdf');</code></pre>
+            </div>
+        </section>
+
+        <section>
+            <h2>4. <code>Promise.race</code></h2>
+            <div class="concept">
+                <p><code>Promise.race</code> settles with the first Promise to settle, whether that result is success or failure. It is useful for a timeout or for waiting for whichever UI state appears first.</p>
+                <pre><code>function timeout(milliseconds) {
+    return new Promise((_, reject) =&gt; {
+        setTimeout(() =&gt; reject(new Error('Timed out')), milliseconds);
+    });
+}
+
+test('waits for success or timeout', async ({ page }) =&gt; {
+    await page.goto('https://example.com/');
+
+    await Promise.race([
+        page.getByText('Report ready').waitFor(),
+        timeout(5000)
+    ]);
+});</code></pre>
+                <div class="warning"><strong>Careful:</strong> the losing Promise is not automatically cancelled. Prefer Playwright's own timeouts for normal locator assertions, and use <code>Promise.race</code> when you genuinely need first-result behavior.</div>
+            </div>
+        </section>
+
+        <section>
+            <h2>5. <code>new Promise</code></h2>
+            <div class="concept">
+                <p><code>new Promise</code> adapts callback-style or custom asynchronous work into a Promise. Call <code>resolve</code> on success and <code>reject</code> on failure.</p>
+                <pre><code>function waitForTestData() {
+    return new Promise((resolve, reject) =&gt; {
+        setTimeout(() =&gt; {
+            const data = { username: 'alex' };
+            data ? resolve(data) : reject(new Error('No data'));
+        }, 300);
+    });
+}
+
+test('uses custom asynchronous data', async ({ page }) =&gt; {
+    const data = await waitForTestData();
+    await page.getByLabel('Username').fill(data.username);
+});</code></pre>
+                <p>Do not wrap a Playwright method in <code>new Promise</code> just to await it. Methods such as <code>page.goto</code>, <code>locator.click</code>, and <code>expect(...).toBeVisible</code> already return Promises.</p>
+            </div>
+        </section>
+
+        <section>
+            <h2>6. Callback</h2>
+            <div class="concept">
+                <p>A callback is a function passed to another function so it can be called later. Playwright uses callbacks for test bodies and event listeners.</p>
+                <pre><code>test('handles a console message', async ({ page }) =&gt; {
+    const messages = [];
+
+    page.on('console', message =&gt; {
+        messages.push(message.text()); // callback runs when the event occurs
+    });
+
+    await page.goto('https://example.com/');
+    expect(messages).toContain('Page loaded');
+});</code></pre>
+                <p>The function <code>message =&gt; { ... }</code> is the callback. It does not run when it is registered; Playwright calls it later when the browser emits a console event.</p>
+            </div>
+        </section>
+
+        <section>
+            <h2>Putting It Together</h2>
+            <div class="concept">
+                <pre><code>import { test, expect } from '@playwright/test';
+
+test('combines async patterns', async ({ page }) =&gt; {
+    const consoleMessages = [];
+    page.on('console', message =&gt; consoleMessages.push(message.text()));
+
+    await page.goto('https://example.com/');
+
+    const [title, heading] = await Promise.all([
+        page.title(),
+        page.getByRole('heading').first().textContent()
+    ]);
+
+    expect(title).toContain('Example');
+    expect(heading).toBeTruthy();
+});</code></pre>
+                <h3>Quick decision guide</h3>
+                <ul>
+                    <li>Use <code>async</code> on a function that performs asynchronous work.</li>
+                    <li>Use <code>await</code> when the next line depends on the result.</li>
+                    <li>Use <code>Promise.all</code> for independent operations that should run together.</li>
+                    <li>Use <code>Promise.race</code> when the first settled result should decide the flow.</li>
+                    <li>Use <code>new Promise</code> to adapt callback APIs or custom timers.</li>
+                    <li>Use a callback when an event or API will call your function later.</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <footer>Chapter 17 | Async and Await | Playwright learning notes</footer>
+</body>
+</html>
