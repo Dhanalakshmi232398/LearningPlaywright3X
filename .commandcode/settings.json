@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(git:*)",
+      "Shell(if:*)",
+      "Shell(type:*)",
+      "Shell(else:*)",
+      "Shell(git commit -F - <<'EOF' Add Function Closure and String chapter examples - Add IQs.js to Chapter_10_Functions - Add closure, scope, and function examples to Chapter_11_Function_Closure - Add string examples and searching to Chapter_12_String Co-authored-by: CommandCodeBot <noreply@commandcode.ai> EOF)",
+      "Shell(Select-Object:*)",
+      "Shell(git commit -F - <<'EOF' Add SDET coding test practice examples Covers basic programming problems: odd/even check, largest of three numbers, string reversal, palindrome, factorial, fibonacci, prime detection, vowel counting, largest number in array, and removing duplicates from an array. Co-authored-by: CommandCodeBot <noreply@commandcode.ai> EOF)",
+      "Shell(python -c \"import docx; print('docx ok')\" 2>&1)",
+      "Shell(pip:*)",
+      "powershell"
+    ],
+    "deny": [],
+    "defaultMode": "default"
+  }
+}
